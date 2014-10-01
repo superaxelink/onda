@@ -9,6 +9,7 @@ int main()
     /**Definimos variables*/
     float t,dx,dt, v,a0,x0,s0;
     int nx,nt,z,n;
+    FILE *fp,*fp1,*fp2;
     /**ancho de la malla*/
     printf("Introduzca el ancho de la malla\n");
     scanf("%d",&nx);
@@ -44,32 +45,50 @@ int main()
         PSI[z]=a0*((X[z]-x0)/pow(s0,2))*exp(-pow(X[z]-x0,2)/pow(s0,2));
     }
 /**Loop principal*/
-    for(z=1;z<nt-1;z++){
+    for(z=0;z<nt;z++){
 /**Avance temporal*/
     t=t+dt;
 /**Salvamos el paso temporal anterior*/
-    for(n=1;n<nx-1;n++){ 
-        OPHI[z]=PHI[z];
-        OPSI[z]=PSI[z];
-        OPI[z]=PI[z];
-    }
-/**Calculando puntos nuevos para un tiempo t*/ 
-    for(n=1;n<nx-1;n++)
-        /**Primero calculamos las derivadas*/
-        DPSI[z]=(PSI[z+1]-PSI[z-1])/(2*dx);
-        DPI[z]=(PI[z+1]-PI[z-1])/(2*dx);
-        /**Evaluamos las fuentes*/
-        SPHI[z]=PI[z];
-        SPSI[z]=DPI[z];
-        SPI[z]=(pow(v,2))*DPSI[z];
-        /**Actualizamos ecuaciones*/
-        PHI[z]=OPHI[z]+dt*SPHI[z];
-        PSI[z]=OPSI[z]+dt*SPSI[z];
-        PI[z]=OPI[z]+dt*SPI[z]; 
-/**condiciones de frontera*/
+        for(n=1;n<nx-1;n++){ 
+            OPHI[z]=PHI[z];
+            OPSI[z]=PSI[z];
+            OPI[z]=PI[z];
+        }
+      /**Calculando puntos nuevos para un tiempo t*/ 
+       for(n=1;n<nx-1;n++){
+            /**Primero calculamos las derivadas*/
+            DPSI[z]=(PSI[z+1]-PSI[z-1])/(2*dx);
+            DPI[z]=(PI[z+1]-PI[z-1])/(2*dx);
+            /**Evaluamos las fuentes*/
+            SPHI[z]=PI[z];
+            SPSI[z]=DPI[z];
+            SPI[z]=(pow(v,2))*DPSI[z];
+            /**Actualizamos ecuaciones*/
+            PHI[z]=OPHI[z]+dt*SPHI[z];
+            PSI[z]=OPSI[z]+dt*SPSI[z];
+            PI[z]=OPI[z]+dt*SPI[z];
+        } 
+    /**condiciones de frontera*/
     /**frontera derecha*/
     PHI[nx]=-v*PSI[nx];
     /**Frontera izquierda*/
     PHI[0]=v*PSI[0];
+    }
+    /**Creamos documentos de escritura*/
+    fp=fopen("salidaphi.txt","wt");
+    fp1=fopen("salidapsi.txt","wt");
+    fp2=fopen("salidapi.txt","wt");
+    /**Se escribe el resultado en el documento correspondiente*/
+    for (z=0;z<nx;z++){
+        fprintf(fp, "%f",PHI[z]);
+        fprintf(fp,"\n");
+    }
+    for (z=0;z<nx;z++){
+        fprintf(fp1, "%f",PSI[z]);
+        fprintf(fp1,"\n");
+    }
+    for (z=0;z<nx;z++){
+        fprintf(fp2, "%f",PI[z]);
+        fprintf(fp2,"\n");
     }
 }
