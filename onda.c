@@ -16,6 +16,9 @@ int main()
     /**nx=30*/
     /**Matrices que daran informacion de las ecuaciones diferenciales*/
     float X[nx],PI[nx], PHI[nx],PSI[nx],DPSI[nx],DPI[nx],SPSI[nx],SPI[nx],SPHI[nx],OPHI[nx],OPI[nx],OPSI[nx];
+
+    float PI_K1[nx], PHI_K1[nx],PSI_K1[nx];
+
     /**Introducimos valores de avance espacial y temporal, la velocidad de la onda, y los parametros iniciales a0,x0,s0 de la gaussiana*/
     printf("Introduzca la division espacial\n");
     scanf("%f",&dx);
@@ -42,37 +45,7 @@ int main()
         PI[z]=0.0;
     }
     for(z=0;z<nx;z++){
-        PSI[z]=a0*((X[z]-x0)/pow(s0,2))*exp(-pow(X[z]-x0,2)/pow(s0,2));
-    }
-/**Loop principal*/
-    for(z=0;z<nt;z++){
-/**Avance temporal*/
-    t=t+dt;
-/**Salvamos el paso temporal anterior*/
-        for(n=1;n<nx-1;n++){ 
-            OPHI[z]=PHI[z];
-            OPSI[z]=PSI[z];
-            OPI[z]=PI[z];
-        }
-      /**Calculando puntos nuevos para un tiempo t*/ 
-       for(n=1;n<nx-1;n++){
-            /**Primero calculamos las derivadas*/
-            DPSI[z]=(PSI[z+1]-PSI[z-1])/(2*dx);
-            DPI[z]=(PI[z+1]-PI[z-1])/(2*dx);
-            /**Evaluamos las fuentes*/
-            SPHI[z]=PI[z];
-            SPSI[z]=DPI[z];
-            SPI[z]=(pow(v,2))*DPSI[z];
-            /**Actualizamos ecuaciones*/
-            PHI[z]=OPHI[z]+dt*SPHI[z];
-            PSI[z]=OPSI[z]+dt*SPSI[z];
-            PI[z]=OPI[z]+dt*SPI[z];
-        } 
-    /**condiciones de frontera*/
-    /**frontera derecha*/
-    PHI[nx]=-v*PSI[nx];
-    /**Frontera izquierda*/
-    PHI[0]=v*PSI[0];
+        PSI[z]=-2.*a0*((X[z]-x0)/pow(s0,2))*exp(-pow(X[z]-x0,2)/pow(s0,2));
     }
     /**Creamos documentos de escritura*/
     fp=fopen("salidaphi.txt","wt");
@@ -80,15 +53,149 @@ int main()
     fp2=fopen("salidapi.txt","wt");
     /**Se escribe el resultado en el documento correspondiente*/
     for (z=0;z<nx;z++){
-        fprintf(fp, "%f",PHI[z]);
-        fprintf(fp,"\n");
+      fprintf(fp, "%f %f",X[z],PHI[z]);
+      fprintf(fp,"\n");
     }
+      fprintf(fp,"\n\n");
     for (z=0;z<nx;z++){
-        fprintf(fp1, "%f",PSI[z]);
-        fprintf(fp1,"\n");
+      fprintf(fp1, "%f %f",X[z],PSI[z]);
+      fprintf(fp1,"\n");
     }
+      fprintf(fp1,"\n\n");
     for (z=0;z<nx;z++){
-        fprintf(fp2, "%f",PI[z]);
-        fprintf(fp2,"\n");
+      fprintf(fp2, "%f %f",X[z],PI[z]);
+      fprintf(fp2,"\n");
     }
+      fprintf(fp2,"\n\n");
+    
+
+/**Loop principal*/
+    for(z=0;z<nt;z++){
+/**Avance temporal*/
+      t=t+dt;
+/**Salvamos el paso temporal anterior*/
+      for(n=0;n<nx;n++){ 
+	OPHI[n]=PHI[n];
+	OPSI[n]=PSI[n];
+	OPI[n]=PI[n];
+      }
+
+
+      /**Calculando puntos nuevos para un tiempo t*/ 
+
+      //ICN de tres pasos
+      
+      //Primero
+      for(n=0;n<nx;n++){
+	/*Primero calculamos las derivadas*/
+	DPSI[n]=(PSI[n+1]-PSI[n-1])/(2.*dx);
+	DPI[n]=(PI[n+1]-PI[n-1])/(2.*dx);
+      }
+
+      for(n=1;n<nx-1;n++){
+	/**Evaluamos las fuentes*/
+	SPHI[n]=PI[n];
+	SPSI[n]=DPI[n];
+	SPI[n]=(pow(v,2))*DPSI[n];
+
+	//Primer paso (medio intervalo)
+	PHI[n]=OPHI[n]+0.5*dt*SPHI[n];
+	PSI[n]=OPSI[n]+0.5*dt*SPSI[n];
+	PI[n]=OPI[n]+0.5*dt*SPI[n];
+      }
+
+      for(n=0;n<nx;n++){
+	/*Primero calculamos las derivadas*/
+	DPSI[n]=(PSI[n+1]-PSI[n-1])/(2.*dx);
+	DPI[n]=(PI[n+1]-PI[n-1])/(2.*dx);
+      }
+      for(n=1;n<nx-1;n++){
+	/**Evaluamos las fuentes*/
+	SPHI[n]=PI[n];
+	SPSI[n]=DPI[n];
+	SPI[n]=(pow(v,2))*DPSI[n];
+
+	//Agrego pasos intermedios para hacerlo estable
+	// y aumentar el orden
+
+	//Segundo paso (medio intervalo)
+	PHI[n]=OPHI[n]+0.5*dt*SPHI[n];
+	PSI[n]=OPSI[n]+0.5*dt*SPSI[n];
+	PI[n]=OPI[n]+0.5*dt*SPI[n];
+      }
+      for(n=0;n<nx;n++){
+	/*Primero calculamos las derivadas*/
+	DPSI[n]=(PSI[n+1]-PSI[n-1])/(2.*dx);
+	DPI[n]=(PI[n+1]-PI[n-1])/(2.*dx);
+      }
+      for(n=1;n<nx-1;n++){
+	/**Evaluamos las fuentes*/
+	SPHI[n]=PI[n];
+	SPSI[n]=DPI[n];
+	SPI[n]=(pow(v,2))*DPSI[n];
+
+	//Agrego pasos intermedios para hacerlo estable
+	// y aumentar el orden
+
+	//Tercer paso (intervalo completo)
+	PHI[n]=OPHI[n]+dt*SPHI[n];
+	PSI[n]=OPSI[n]+dt*SPSI[n];
+	PI[n]=OPI[n]+dt*SPI[n];
+      }
+/** pi  = dphi/dt*/
+/** psi = dphi/dx*/
+    /**condiciones de frontera*/
+    /**Primeros 2 pasos(medio intervalo)*/
+      for(n=0;n<3;n++){
+        /**frontera derecha*/
+        SPI[nx]=-v*SPSI[nx];//0.;
+        SPHI[nx]=SPI[nx];
+        PHI[nx]=OPHI[nx]+0.5*dt*SPHI[nx];
+        PSI[nx]=OPSI[nx]+0.5*dt*SPSI[nx];
+        PI[nx]=OPI[nx]+0.5*dt*SPI[nx];
+        /**Frontera izquierda*/
+        SPI[0]=v*SPSI[0];//0.;
+        SPHI[0]=PI[0];
+        PHI[0]=OPHI[0]+0.5*dt*SPHI[0];
+        PSI[0]=OPSI[0]+0.5*dt*SPSI[0];
+        PI[0]=OPI[0]+0.5*dt*SPI[0];
+      }
+      //**Paso completo*/
+      SPI[nx]=-v*SPSI[nx];//0.;
+      SPHI[nx]=SPI[nx];
+      PHI[nx]=OPHI[nx]+dt*SPHI[nx];
+      PSI[nx]=OPSI[nx]+dt*SPSI[nx];
+      PI[nx]=OPI[nx]+dt*SPI[nx];
+      /**Frontera izquierda*/
+      SPI[0]=v*SPSI[0];//v*PSI[0];
+      SPHI[0]=PI[0];
+      PHI[0]=OPHI[0]+dt*SPHI[0];
+      PSI[0]=OPSI[0]+dt*SPSI[0];
+      PI[0]=OPI[0]+dt*SPI[0];
+    /**Se escribe el resultado en el documento correspondiente*/
+    for (n=0;n<nx;n++){
+      fprintf(fp, "%f %f",X[n],PHI[n]);
+      fprintf(fp,"\n");
+    }
+      fprintf(fp,"\n\n");
+    for (n=0;n<nx;n++){
+      fprintf(fp1, "%f %f",X[n],PSI[n]);
+      fprintf(fp1,"\n");
+    }
+      fprintf(fp1,"\n\n");
+    for (n=0;n<nx;n++){
+      fprintf(fp2, "%f %f",X[n],PI[n]);
+      fprintf(fp2,"\n");
+    }
+      fprintf(fp2,"\n\n");
+
+
+    }
+
+    //Clean exit
+
+    fclose(fp);
+    fclose(fp1);
+    fclose(fp2);
+
 }
