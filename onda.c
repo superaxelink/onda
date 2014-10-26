@@ -86,11 +86,16 @@ int main()
       //ICN de tres pasos
       
       //Primero
-      for(n=0;n<nx;n++){
+      for(n=1;n<nx-1;n++){
 	/*Primero calculamos las derivadas*/
 	DPSI[n]=(PSI[n+1]-PSI[n-1])/(2.*dx);
 	DPI[n]=(PI[n+1]-PI[n-1])/(2.*dx);
       }
+      /**DPSI[0]=(PSI[1]-PSI[0])/dx;
+      DPI[0]=(PI[1]-PI[0])/dx;
+      DPSI[nx]=(PSI[nx]-PSI[nx-1])/dx;
+      DPI[nx]=(PI[nx]-PI[nx-1])/dx;*/
+      
 
       for(n=1;n<nx-1;n++){
 	/**Evaluamos las fuentes*/
@@ -104,11 +109,36 @@ int main()
 	PI[n]=OPI[n]+0.5*dt*SPI[n];
       }
 
-      for(n=0;n<nx;n++){
+      /**frontera derecha*/
+      SPI[nx-1]=-v/dx*(PI[nx-1]-PI[nx-2]);//0.;
+      SPHI[nx-1]=-v/dx*(PHI[nx-1]-PHI[nx-2]);
+      SPSI[nx-1]=-v/dx*(PSI[nx-1]-PSI[nx-2]);
+
+      PHI[nx-1]=OPHI[nx-1]+0.5*dt*SPHI[nx-1];
+      PSI[nx-1]=OPSI[nx-1]+0.5*dt*SPSI[nx-1];
+      PI[nx-1]=OPI[nx-1]+0.5*dt*SPI[nx-1];
+
+      /**Frontera izquierda*/
+      SPI[0]=v/dx*(PI[1]-PI[0]);//0.;
+      SPHI[0]=v/dx*(PHI[1]-PHI[0]);
+      SPSI[0]=v/dx*(PSI[1]-PSI[0]);
+
+      PHI[0]=OPHI[0]+0.5*dt*SPHI[0];
+      PSI[0]=OPSI[0]+0.5*dt*SPSI[0];
+      PI[0]=OPI[0]+0.5*dt*SPI[0];
+
+
+
+      for(n=1;n<nx-1;n++){
 	/*Primero calculamos las derivadas*/
 	DPSI[n]=(PSI[n+1]-PSI[n-1])/(2.*dx);
 	DPI[n]=(PI[n+1]-PI[n-1])/(2.*dx);
       }
+      /**DPSI[0]=(PSI[1]-PSI[0])/dx;
+      DPI[0]=(PI[1]-PI[0])/dx;
+      DPSI[nx]=(PSI[nx]-PSI[nx-1])/dx;
+      DPI[nx]=(PI[nx]-PI[nx-1])/dx;*/
+
       for(n=1;n<nx-1;n++){
 	/**Evaluamos las fuentes*/
 	SPHI[n]=PI[n];
@@ -123,11 +153,37 @@ int main()
 	PSI[n]=OPSI[n]+0.5*dt*SPSI[n];
 	PI[n]=OPI[n]+0.5*dt*SPI[n];
       }
-      for(n=0;n<nx;n++){
+
+        /**frontera derecha*/
+      SPI[nx-1]=-v/dx*(PI[nx-1]-PI[nx-2]);//0.;
+      SPHI[nx-1]=-v/dx*(PHI[nx-1]-PHI[nx-2]);
+      SPSI[nx-1]=-v/dx*(PSI[nx-1]-PSI[nx-2]);
+
+      PHI[nx-1]=OPHI[nx-1]+0.5*dt*SPHI[nx-1];
+      PSI[nx-1]=OPSI[nx-1]+0.5*dt*SPSI[nx-1];
+      PI[nx-1]=OPI[nx-1]+0.5*dt*SPI[nx-1];
+
+      /**Frontera izquierda*/
+      SPI[0]=v/dx*(PI[1]-PI[0]);//0.;
+      SPHI[0]=v/dx*(PHI[1]-PHI[0]);
+      SPSI[0]=v/dx*(PSI[1]-PSI[0]);
+
+      PHI[0]=OPHI[0]+0.5*dt*SPHI[0];
+      PSI[0]=OPSI[0]+0.5*dt*SPSI[0];
+      PI[0]=OPI[0]+0.5*dt*SPI[0];
+
+
+
+      for(n=0;n<nx-1;n++){
 	/*Primero calculamos las derivadas*/
 	DPSI[n]=(PSI[n+1]-PSI[n-1])/(2.*dx);
 	DPI[n]=(PI[n+1]-PI[n-1])/(2.*dx);
       }
+      /**DPSI[0]=(PSI[1]-PSI[0])/dx;
+      DPI[0]=(PI[1]-PI[0])/dx;
+      DPSI[nx]=(PSI[nx]-PSI[nx-1])/dx;
+      DPI[nx]=(PI[nx]-PI[nx-1])/dx;*/
+
       for(n=1;n<nx-1;n++){
 	/**Evaluamos las fuentes*/
 	SPHI[n]=PI[n];
@@ -142,36 +198,56 @@ int main()
 	PSI[n]=OPSI[n]+dt*SPSI[n];
 	PI[n]=OPI[n]+dt*SPI[n];
       }
+
+        /**frontera derecha*/
+      SPI[nx-1]=-v/dx*(PI[nx-1]-PI[nx-2]);//0.;
+      SPHI[nx-1]=-v/dx*(PHI[nx-1]-PHI[nx-2]);
+      SPSI[nx-1]=-v/dx*(PSI[nx-1]-PSI[nx-2]);
+
+      PHI[nx-1]=OPHI[nx-1]+dt*SPHI[nx-1];
+      PSI[nx-1]=OPSI[nx-1]+dt*SPSI[nx-1];
+      PI[nx-1]=OPI[nx-1]+dt*SPI[nx-1];
+
+        /**Frontera izquierda*/
+      SPI[0]=v/dx*(PI[1]-PI[0]);//0.;
+      SPHI[0]=v/dx*(PHI[1]-PHI[0]);
+      SPSI[0]=v/dx*(PSI[1]-PSI[0]);
+      PHI[0]=OPHI[0]+dt*SPHI[0];
+      PSI[0]=OPSI[0]+dt*SPSI[0];
+      PI[0]=OPI[0]+dt*SPI[0];
+
+
 /** pi  = dphi/dt*/
 /** psi = dphi/dx*/
     /**condiciones de frontera*/
     /**Primeros 2 pasos(medio intervalo)*/
-      for(n=0;n<3;n++){
-        /**frontera derecha*/
-        SPI[nx]=-v*SPSI[nx];//0.;
-        SPHI[nx]=SPI[nx];
-        PHI[nx]=OPHI[nx]+0.5*dt*SPHI[nx];
-        PSI[nx]=OPSI[nx]+0.5*dt*SPSI[nx];
-        PI[nx]=OPI[nx]+0.5*dt*SPI[nx];
-        /**Frontera izquierda*/
-        SPI[0]=v*SPSI[0];//0.;
-        SPHI[0]=PI[0];
-        PHI[0]=OPHI[0]+0.5*dt*SPHI[0];
-        PSI[0]=OPSI[0]+0.5*dt*SPSI[0];
-        PI[0]=OPI[0]+0.5*dt*SPI[0];
-      }
-      //**Paso completo*/
-      SPI[nx]=-v*SPSI[nx];//0.;
-      SPHI[nx]=SPI[nx];
-      PHI[nx]=OPHI[nx]+dt*SPHI[nx];
-      PSI[nx]=OPSI[nx]+dt*SPSI[nx];
-      PI[nx]=OPI[nx]+dt*SPI[nx];
-      /**Frontera izquierda*/
-      SPI[0]=v*SPSI[0];//v*PSI[0];
-      SPHI[0]=PI[0];
-      PHI[0]=OPHI[0]+dt*SPHI[0];
-      PSI[0]=OPSI[0]+dt*SPSI[0];
-      PI[0]=OPI[0]+dt*SPI[0];
+      /* for(n=0;n<3;n++){ */
+      /*   /\**frontera derecha*\/ */
+      /*   SPI[nx]=-v*SPSI[nx];//0.; */
+      /*   SPHI[nx]=SPI[nx]; */
+      /*   PHI[nx]=OPHI[nx]+0.5*dt*SPHI[nx]; */
+      /*   PSI[nx]=OPSI[nx]+0.5*dt*SPSI[nx]; */
+      /*   PI[nx]=OPI[nx]+0.5*dt*SPI[nx]; */
+      /*   /\**Frontera izquierda*\/ */
+      /*   SPI[0]=v*SPSI[0];//0.; */
+      /*   SPHI[0]=PI[0]; */
+      /*   PHI[0]=OPHI[0]+0.5*dt*SPHI[0]; */
+      /*   PSI[0]=OPSI[0]+0.5*dt*SPSI[0]; */
+      /*   PI[0]=OPI[0]+0.5*dt*SPI[0]; */
+      /* } */
+      /* //\**Paso completo*\/ */
+      /* SPI[nx]=-v*SPSI[nx];//0.; */
+      /* SPHI[nx]=SPI[nx]; */
+      /* PHI[nx]=OPHI[nx]+dt*SPHI[nx]; */
+      /* PSI[nx]=OPSI[nx]+dt*SPSI[nx]; */
+      /* PI[nx]=OPI[nx]+dt*SPI[nx]; */
+      /* /\**Frontera izquierda*\/ */
+      /* SPI[0]=v*SPSI[0];//v*PSI[0]; */
+      /* SPHI[0]=PI[0]; */
+      /* PHI[0]=OPHI[0]+dt*SPHI[0]; */
+      /* PSI[0]=OPSI[0]+dt*SPSI[0]; */
+      /* PI[0]=OPI[0]+dt*SPI[0]; */
+
     /**Se escribe el resultado en el documento correspondiente*/
     for (n=0;n<nx;n++){
       fprintf(fp, "%f %f",X[n],PHI[n]);
